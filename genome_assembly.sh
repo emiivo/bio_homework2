@@ -24,6 +24,7 @@ done
 # Alternative assembly can be found in ~/HW2/outputs
 
 # Next, QUAST was used to evaluate assemblies made with SPAdes and ABySS.
+# QUAST results can be found in ~/HW2/outputs/quast
 
 
 
