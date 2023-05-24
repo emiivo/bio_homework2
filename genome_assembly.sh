@@ -84,4 +84,47 @@ conda deactivate
 
 # For SRR18214264: the assembly made with SPAdes, because it reaches a higher cumulative
 # length much quicker and that means the assembly will be more complete.
+
+# Use BWA for mapping. I decided to use BWA because it supports the mapping of
+# reads to a single reference genome without the need for transcriptome-based 
+# mapping or splicing-aware alignment.
+
+# List of input files
+files_for_mapping =(
+  "$OUTPUT_DIR/ERR204044_spades_reordered/ragtag.scaffold.fasta"
+  "$OUTPUT_DIR/SRR15131330_spades_reordered/ragtag.scaffold.fasta"
+  "$OUTPUT_DIR/SRR18214264_spades_reordered/ragtag.scaffold.fasta"
+  "$OUTPUT_DIR/ERR204044_abyss_reordered/ragtag.scaffold.fasta"
+  "$OUTPUT_DIR/SRR15131330_abyss_reordered/ragtag.scaffold.fasta"
+  "$OUTPUT_DIR/SRR18214264_abyss_reordered/ragtag.scaffold.fasta"
+)
+files_names_mapping=(
+  "ERR204044_spades"
+  "SRR15131330_spades"
+  "SRR18214264_spades"
+  "ERR204044_abyss"
+  "SRR15131330_abyss"
+  "SRR18214264_abyss"
+)
+
+# BWA index file path
+index_file=~/HW2/references/CP015498.fasta
+
+bwa index ~/HW2/references/CP015498.fasta
+
+# Loop through input files
+for i in "${!files_for_mapping[@]}"; do
+  file="${files_for_mapping[i]}"
+  file_name="${files_names_mapping[i]}"
+
+  # Mapping using BWA
+  #bwa mem -t 6 "$index_file" "$file" -o "$OUTPUT_DIR/$file_name.sam"
+
+  # Conversion to BAM format using samtools
+  #samtools view -@ 6 -F 0x4 -F 0x2 -bS "$OUTPUT_DIR/$file_name.sam" > "$OUTPUT_DIR/$file_name.bam"
+
+  # Remove intermediate SAM file
+  rm "$OUTPUT_DIR/$file_name.sam"
+done
+
  
