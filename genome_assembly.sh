@@ -27,4 +27,50 @@ done
 # QUAST results can be found in ~/HW2/outputs/quast
 
 
+# Create and activate ragtagEnv Conda environment, download RagTag
+
+conda create -n ragtagEnv
+conda activate ragtagEnv
+#if RagTag is not installed, install it
+if ! conda list ragtag | grep -q "ragtag"; then
+  conda install -c bioconda ragtag
+fi
+
+
+# List of directories for SPAdes output
+files_spades=(
+  "$OUTPUT_DIR/ERR204044_trimmed_SPADES_OUT"
+  "$OUTPUT_DIR/SRR15131330_trimmed_SPADES_OUT"
+  "$OUTPUT_DIR/SRR18214264_trimmed_SPADES_OUT"
+)
+
+# RagTag for SPAdes
+for i in "${!files_spades[@]}"; do
+  fasta_file_spades="${files_spades[i]}/contigs.fasta"
+  # Run ragtag.py scaffold with -u option
+  ragtag.py scaffold ~/HW2/references/CP015498.fasta "$fasta_file_spades" -o "$OUTPUT_DIR/${files_names[i]}_spades_reordered"
+done
+
+files_abyss=(
+  "$OUTPUT_DIR/ERR204044_alternative_contigs.fasta"
+  "$OUTPUT_DIR/SRR15131330_alternative_contigs.fasta"
+  "$OUTPUT_DIR/SRR18214264_alternative_contigs.fasta"
+)
+
+# Output file names
+output_names_abyss_ragtag=(
+  "ERR204044_abyss_reordered"
+  "SRR15131330_abyss_reordered"
+  "SRR18214264_abyss_reordered"
+)
+
+# RagTag for ABySS
+for i in "${!files_abyss[@]}"; do
+  ragtag.py scaffold ~/HW2/references/CP015498.fasta "${files_abyss[i]}" -o "$OUTPUT_DIR/${output_names_abyss_ragtag[i]}"
+done
+
+# Deactivate ragtagEnv environment
+conda deactivate
+
+
 
