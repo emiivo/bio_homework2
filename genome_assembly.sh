@@ -118,10 +118,10 @@ for i in "${!files_for_mapping[@]}"; do
   file_name="${files_names_mapping[i]}"
 
   # Mapping using BWA
-  #bwa mem -t 6 "$index_file" "$file" -o "$OUTPUT_DIR/$file_name.sam"
+  bwa mem -t 6 "$index_file" "$file" -o "$OUTPUT_DIR/$file_name.sam"
 
   # Conversion to BAM format using samtools
-  #samtools view -@ 6 -F 0x4 -F 0x2 -bS "$OUTPUT_DIR/$file_name.sam" > "$OUTPUT_DIR/$file_name.bam"
+  samtools view -@ 6 -F 0x4 -F 0x2 -bS "$OUTPUT_DIR/$file_name.sam" > "$OUTPUT_DIR/$file_name.bam"
 
   # Remove intermediate SAM file
   rm "$OUTPUT_DIR/$file_name.sam"
