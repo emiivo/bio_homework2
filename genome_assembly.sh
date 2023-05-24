@@ -72,5 +72,16 @@ done
 # Deactivate ragtagEnv environment
 conda deactivate
 
+# Using quast results select the best/better assembly for each sample.
+# For ERR204044: the assembly made with ABySS, because it reaches a higher cumulative
+# length and that means the assembly will be more complete and contiguous.
+
+# For SRR15131330: the assembly made with SPAdes, because it reaches a higher cumulative
+# length and that means the assembly will be more complete and contiguous. Also,
+# assembly with ABySS almost has a linear relationship, which can indicate that the assembly consists 
+# of numerous short contigs without substantial long-range connections or larger-scale structural information. 
 
 
+# For SRR18214264: the assembly made with SPAdes, because it reaches a higher cumulative
+# length much quicker and that means the assembly will be more complete.
+ 
