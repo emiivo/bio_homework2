@@ -3,6 +3,8 @@
 INPUT_DIR=~/HW2/inputs
 OUTPUT_DIR=~/HW2/outputs
 
+# -----------------------------------
+# First part of the script is genome mapping with abyss.
 # Define the input file pairs
 input_files=(
   "$OUTPUT_DIR/SRR15131330_trimmed_2.fastq.gz $OUTPUT_DIR/SRR15131330_trimmed_1.fastq.gz"
@@ -20,13 +22,18 @@ for files in "${input_files[@]}"; do
   spades.py --careful -o "${input_file_1%_*}_SPADES_OUT" -1 "$input_file_1" -2 "$input_file_2"
 done
 
+# -----------------------------------------
 # Alternative assembly was created with ABySS through my own computer in browser, not by script.
 # Alternative assembly can be found in ~/HW2/outputs
 
+
+# ------------------------------------------
 # Next, QUAST was used to evaluate assemblies made with SPAdes and ABySS.
 # QUAST results can be found in ~/HW2/outputs/quast
 
 
+# ------------------------------------------
+# Next part of the script is making scaffolds (orienating contigs) using ragtag. 
 # Create and activate ragtagEnv Conda environment, download RagTag
 
 conda create -n ragtagEnv
@@ -72,7 +79,8 @@ done
 # Deactivate ragtagEnv environment
 conda deactivate
 
-# Using quast results select the best/better assembly for each sample.
+# ----------------------------------
+# Using quast results select the best/better assembly for each sample:
 # For ERR204044: the assembly made with ABySS, because it reaches a higher cumulative
 # length and that means the assembly will be more complete and contiguous.
 
@@ -85,46 +93,96 @@ conda deactivate
 # For SRR18214264: the assembly made with SPAdes, because it reaches a higher cumulative
 # length much quicker and that means the assembly will be more complete.
 
+# ---------------------------------------------
 # Use BWA for mapping. I decided to use BWA because it supports the mapping of
 # reads to a single reference genome without the need for transcriptome-based 
 # mapping or splicing-aware alignment.
 
-# List of input files
-files_for_mapping =(
-  "$OUTPUT_DIR/ERR204044_spades_reordered/ragtag.scaffold.fasta"
-  "$OUTPUT_DIR/SRR15131330_spades_reordered/ragtag.scaffold.fasta"
-  "$OUTPUT_DIR/SRR18214264_spades_reordered/ragtag.scaffold.fasta"
-  "$OUTPUT_DIR/ERR204044_abyss_reordered/ragtag.scaffold.fasta"
-  "$OUTPUT_DIR/SRR15131330_abyss_reordered/ragtag.scaffold.fasta"
-  "$OUTPUT_DIR/SRR18214264_abyss_reordered/ragtag.scaffold.fasta"
-)
-files_names_mapping=(
-  "ERR204044_spades"
-  "SRR15131330_spades"
-  "SRR18214264_spades"
-  "ERR204044_abyss"
-  "SRR15131330_abyss"
-  "SRR18214264_abyss"
+
+# Define output directory
+OUTPUT_DIR=~/HW2/outputs
+INPUT_DIR=~/HW2/inputs
+
+# Define abyss assembly file names
+abyss_assembly_files=(
+  "ERR204044_alternative_contigs.fasta"
+  "SRR15131330_alternative_contigs.fasta"
+  "SRR18214264_alternative_contigs.fasta"
 )
 
-# BWA index file path
-index_file=~/HW2/references/CP015498.fasta
+# Define read file names
+read_files=(
+  "ERR204044"
+  "SRR15131330"
+  "SRR18214264"
+)
 
-bwa index ~/HW2/references/CP015498.fasta
-
-# Loop through input files
-for i in "${!files_for_mapping[@]}"; do
-  file="${files_for_mapping[i]}"
-  file_name="${files_names_mapping[i]}"
-
-  # Mapping using BWA
-  bwa mem -t 6 "$index_file" "$file" -o "$OUTPUT_DIR/$file_name.sam"
-
-  # Conversion to BAM format using samtools
-  samtools view -@ 6 -F 0x4 -F 0x2 -bS "$OUTPUT_DIR/$file_name.sam" > "$OUTPUT_DIR/$file_name.bam"
-
-  # Remove intermediate SAM file
-  rm "$OUTPUT_DIR/$file_name.sam"
+# Map each read file to its corresponding alternative assembly file
+for ((i=0; i<${#abyss_assembly_files[@]}; i++)); do
+  assembly_file="${abyss_assembly_files[i]}"
+  read_file="${read_files[i]}"
+  sam_output="$OUTPUT_DIR/${assembly_file%.fasta}_$read_file.abyss.sam"
+  bwa mem -t 6 "$OUTPUT_DIR/$assembly_file" "$INPUT_DIR/$read_file"_1.fastq.gz "$INPUT_DIR/$read_file"_2.fastq.gz -o "$sam_output"
+  samtools view -@ 6 -F 0x4 -F 0x2 -bS "$sam_output" > "$OUTPUT_DIR/${assembly_file%.fasta}_$read_file.abyss.bam"
 done
 
- 
+
+# Define spades assembly file names
+spades_assembly_files=(
+  "ERR204044_trimmed_SPADES_OUT/contigs.fasta"
+  "SRR15131330_trimmed_SPADES_OUT/contigs.fasta"
+  "SRR18214264_trimmed_SPADES_OUT/contigs.fasta"
+)
+
+# Map the original read files to the spades assemblies
+for ((i=0; i<${#rspades_assembly_files[@]}; i++)); do
+  assembly_file="${spades_assembly_files[i]}"
+  read_file="${read_files[i]}"
+  sam_output="$OUTPUT_DIR/${read_file}_spades.sam"
+  bwa mem -t 6 "$OUTPUT_DIR/$assembly_file" "$INPUT_DIR/${read_file}_1.fastq.gz" "$INPUT_DIR/${read_file}_2.fastq.gz" -o "$sam_output"
+  samtools view -@ 6 -F 0x4 -F 0x2 -bS "$sam_output" > "$OUTPUT_DIR/${read_file}_spades.bam"
+
+done
+
+ # Remove .sam files
+rm *.sam
+
+# --------------------------
+# Next is analysis of mapping results. The mapping fraction aswell as genome coverage from mapped reads.
+
+# Find all .bam files in the output directory
+bam_files=("$OUTPUT_DIR"/*.bam)
+
+
+# Loop through the BAM files
+for bam_file in "${bam_files[@]}"; do
+
+  # Extract the filename without the extension
+  filename=$(basename "$bam_file" .bam)
+
+  # Sort the BAM file by position
+  sorted_bam_file="$OUTPUT_DIR/${filename}_sorted.bam"
+  samtools sort -@ 6 -o "$sorted_bam_file" "$bam_file"
+
+  # Index the sorted BAM file
+  samtools index "$sorted_bam_file"
+
+  # Calculate mapping fraction using samtools flagstat and samtools view
+  total_reads=$(samtools flagstat "$sorted_bam_file" | awk 'NR==1 {print $1}')
+  mapped_reads=$(samtools view -c -F 4 "$sorted_bam_file")
+  mapping_fraction=$(awk "BEGIN {printf \"%.2f\", ($mapped_reads / $total_reads) * 100}")
+
+  # Output the results to a file in the results directory
+  echo "Mapping fraction for $filename: $mapping_fraction%" >> "$RESULTS_DIR/mapping_results.txt"
+
+  # Calculate the coverage using samtools depth
+  # I used this "if", because some of my sorted files were not being created properly
+  if [[ -f "$sorted_bam_file" ]]; then
+    coverage=$(samtools depth -a "$sorted_bam_file" | awk '{ total += $3 } END { printf "%.2f", total / NR }')
+    echo "Coverage for $filename: $coverage" >> "$RESULTS_DIR/coverage_results.txt"
+  else
+    echo "Sorted BAM file not found for $filename" >> "$RESULTS_DIR/coverage_results.txt"
+  fi
+
+done
+
