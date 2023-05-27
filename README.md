@@ -10,8 +10,10 @@ Tools used:
 4. SPAdes;
 5. ABySS;
 6. RagTag;
-7. Gepard;
-8. BUSCO;
-9. GeneMarkS-2;
-10. RAST;
-11. BLAST.
+7. BWA;
+8. Samtools;
+9. Gepard;
+10. BUSCO;
+11. GeneMarkS-2;
+12. RAST;
+13. BLAST.
