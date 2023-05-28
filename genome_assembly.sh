@@ -2,6 +2,7 @@
 
 INPUT_DIR=~/HW2/inputs
 OUTPUT_DIR=~/HW2/outputs
+RESULTS_DIR=~/HW2/results
 
 # -----------------------------------
 # First part of the script is genome mapping with abyss.
@@ -150,39 +151,39 @@ rm *.sam
 # --------------------------
 # Next is analysis of mapping results. The mapping fraction aswell as genome coverage from mapped reads.
 
-# Find all .bam files in the output directory
-bam_files=("$OUTPUT_DIR"/*.bam)
+# Find all _sorted.bam files in the output directory
+bam_files=("$OUTPUT_DIR"/*_sorted.bam)
 
-
-# Loop through the BAM files
+# Loop through the sorted BAM files
 for bam_file in "${bam_files[@]}"; do
 
   # Extract the filename without the extension
-  filename=$(basename "$bam_file" .bam)
+  filename=$(basename "$bam_file" _sorted.bam)
 
-  # Sort the BAM file by position
-  sorted_bam_file="$OUTPUT_DIR/${filename}_sorted.bam"
-  samtools sort -@ 6 -o "$sorted_bam_file" "$bam_file"
+  # Calculate the mapping rate using samtools flagstat
+  mapping_output=$(samtools flagstat "$bam_file")
+  mapped_reads=$(echo "$mapping_output" | awk 'NR==9 {print $1}')
+  total_reads=$(echo "$mapping_output" | awk 'NR==1 {print $1}')
 
-  # Index the sorted BAM file
-  samtools index "$sorted_bam_file"
+  echo "Mapping Output for $filename:"
+  echo "$mapping_output"
 
-  # Calculate mapping fraction using samtools flagstat and samtools view
-  total_reads=$(samtools flagstat "$sorted_bam_file" | awk 'NR==1 {print $1}')
-  mapped_reads=$(samtools view -c -F 4 "$sorted_bam_file")
-  mapping_fraction=$(awk "BEGIN {printf \"%.2f\", ($mapped_reads / $total_reads) * 100}")
+  # Calculate the mapping rate
+  if [[ $total_reads -ne 0 ]]; then
+    mapping_rate=$(awk "BEGIN {printf \"%.2f\", ($mapped_reads / $total_reads) * 100}")
+  else
+    mapping_rate="N/A"
+  fi
 
-  # Output the results to a file in the results directory
-  echo "Mapping fraction for $filename: $mapping_fraction%" >> "$RESULTS_DIR/mapping_results.txt"
+  echo "Mapping rate for $filename: $mapping_rate%"  >> "$RESULTS_DIR/mapping_results.txt"
 
   # Calculate the coverage using samtools depth
-  # I used this "if", because some of my sorted files were not being created properly
-  if [[ -f "$sorted_bam_file" ]]; then
-    coverage=$(samtools depth -a "$sorted_bam_file" | awk '{ total += $3 } END { printf "%.2f", total / NR }')
-    echo "Coverage for $filename: $coverage" >> "$RESULTS_DIR/coverage_results.txt"
-  else
-    echo "Sorted BAM file not found for $filename" >> "$RESULTS_DIR/coverage_results.txt"
-  fi
+   if [[ -f "$bam_file" ]]; then
+     coverage=$(samtools depth -a "$bam_file" | awk '{ total += $3 } END { printf "%.2f", total / NR }')
+     echo "Coverage for $filename: $coverage" >> "$RESULTS_DIR/coverage_results.txt"
+   else
+     echo "Sorted BAM file not found for $filename" >> "$RESULTS_DIR/coverage_results.txt"
+   fi
 
 done
 
