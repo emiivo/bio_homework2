@@ -27,7 +27,6 @@ done
 # Alternative assembly was created with ABySS through my own computer in browser, not by script.
 # Alternative assembly can be found in ~/HW2/outputs
 
-
 # ------------------------------------------
 # Next, QUAST was used to evaluate assemblies made with SPAdes and ABySS.
 # QUAST results can be found in ~/HW2/outputs/quast
@@ -184,6 +183,53 @@ for bam_file in "${bam_files[@]}"; do
    else
      echo "Sorted BAM file not found for $filename" >> "$RESULTS_DIR/coverage_results.txt"
    fi
-
 done
 
+# ---------------------------------
+# Mapping rate: 
+# For the ERR204044 dataset, the mapping rate for the ABySS assembly is 86.28%, while for the Spades assembly, it is 98.83%.
+# The SPAdes assembly has a higher mapping rate, it aligns more reads to the reference genome compared to the ABySS assembly.
+# This suggests that the SPAdes assembly produced a more complete and accurate representation of the genome.
+
+# For the SRR15131330 dataset, the mapping rate for the ABySS assembly is 48.40%, while for the SPAdes assembly, it is 98.72%. 
+# Again, the SPAdes assembly exhibits a significantly higher mapping rate, implying a better alignment of reads and potentially 
+# a more reliable assembly compared to the ABySS assembly.
+
+# Lastly, for the SRR18214264 dataset, the mapping rate for the ABySS assembly is 46.93%, while for the SPAdes assembly, it is 98.18%.
+# The Spades assembly demonstrates a higher mapping rate, indicating a superior alignment of reads.
+
+# In summary, the mapping rates for the SPAdes assemblies consistently outperform those of the ABySS assemblies in all three datasets provided.
+# This is not exactly the result I was expecting, because when using QUAST, all assemblies seemed to be similar in quality, in ERR204044 
+# it seemed that ABySS generated a better assembly.
+# ---------------------------------
+# Genome coverage:
+# For the ERR204044 dataset, the coverage for the Abyss assembly is 29.80, while for the Spades assembly, it is 19.95. 
+# The Abyss assembly has a higher coverage, suggesting that it may have captured more sequencing depth 
+# and potentially provided a more comprehensive representation of the genome compared to the Spades assembly.
+
+# For the SRR15131330 dataset, the coverage for the Abyss assembly is 434.17, while for the Spades assembly,
+# it is 218.10. The Abyss assembly demonstrates a higher coverage value, indicating a greater sequencing depth.
+
+# Lastly, for the SRR18214264 dataset, the coverage for the Abyss assembly is 42.80, while for the Spades assembly,
+# it is 6.56. Once again, the Abyss assembly exhibits a higher coverage value.
+
+# The mapping rates are higher for the SPAdes assemblies, indicating that a larger percentage 
+# of reads were successfully aligned to the reference genome using the SPAdes method. However, the coverage values are
+# higher for ABySSs assemblies, indicating a higher sequencing depth.
+
+
+# ---------------------------------------
+# Next step is using Gepard to create dotplots between samples. I did this through my own computer, 
+# results can be found in moodle.
+# I compared both SPAdes and ABySS scaffolds, but the I analyse AbySS assemblies, the more I believe my ABySS assemblies have either been made incorrectly
+# or I compromised them in a different step. The low mapping could an indicator of the assemblies not being correct. The dotplots do show coorelation,
+# but they are distorted and I am not sure they can even be analised properly.
+
+# As for the SPAdes samples, these are the results I got:
+# 1) ERR204044 and SRR15131330 - the dotplot indicates the sequences align in many areas, suggesting the sequences are similar.
+# This suggests that they may share common genomic regions or have similar genetic content.
+# 2) SRR18214264 and ERR204044 - the dotplot also shows that the sequences are similar, but they have more areas that differ in comparrisson to 
+# the ERR204044 and SRR15131330 dotplot. The differences observed in the dotplot suggest variations or divergent regions between the two samples,
+# indicating distinct genomic features or genetic differences.
+# 3) SRR18214264 and SRR15131330 - the dotplot is very similar to dotplot of ERR204044 and SRR15131330, indicating a high level of sequence 
+# alignment and similarity between these two samples. 
