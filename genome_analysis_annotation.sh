@@ -1,4 +1,15 @@
 
+#!/bin/bash
+
+REFERENCE_DIR=~/HW2/references
+OUTPUT_DIR=~/HW2/outputs
+
+# Download reference files for CP015498 nucleotides and proteins:
+
+wget "https://www.ncbi.nlm.nih.gov/sviewer/viewer.cgi?db=nuccore&dopt=fasta&sendto=on&id=CP015498.1" -O "$REFERENCE_DIR/CP015498.fasta"
+
+wget "https://www.ncbi.nlm.nih.gov/sviewer/viewer.fcgi?id=1318702381&db=nuccore&report=fasta&retmode=text" -O "$REFERENCE_DIR/CP015498_protein.fasta"
+
 # ---------------------------------------
 # First step for genome analysis and annotation is using Gepard to create dotplots between samples. I did this through my own computer, 
 # results can be found in moodle.
@@ -40,3 +51,82 @@
 # only 1 of the BUSCOs were missing from the assembly. This result is also good.
 # 3) SRR18214264 - ad with ERR204044, 99.0% of the BUSCOs in the lineage dataset were identified in the assembly. Only 0.5% of the BUSCOs were identified as fragmented, 
 # indicating nearly complete gene sequences and 0.5% were missing. This result also very good.
+
+# --------------------------------------
+
+# Next step is gene prediction with GeneMarkS-2. This was done on my own computer through the graphical user interface.
+# Results will be discussed when I compare all three of the required gene prediction tools.
+
+# --------------------------------------
+
+# The next step is to using RAST genome annotation server, predict and annotate genes in my assemblies. 
+# I used RAST in my own computer as well. The results will be discussed in a later part of the code, but a problem I encountered with my assemblies 
+# made with ABySS are that SRR18214264 and SRR15131330 were too low quality to use 
+# (Message of the site - "We are sorry, but your job appears to still be too low quality for RAST to analyze").
+# I decided to still do the rest of the steps with them because I hope that maybe I will still get at least some useful result or get some idea of why
+# exactly their assembly failed.
+
+# --------------------------------------
+# Next step - gene prediction using CP015498 genes and proteins models as well as local blast.
+
+CP015498_NUCLEOTIDE=$REFERENCE_DIR/CP015498.fasta
+CP015498_PROTEIN=$REFERENCE_DIR/CP015498_protein.fasta
+
+# Set the path to the assembly files (scaffolded)
+ASSEMBLY_DIRECTORIES=(
+    "$OUTPUT_DIR/ERR204044_spades_reordered"
+    "$OUTPUT_DIR/ERR204044_abyss_reordered"
+    "$OUTPUT_DIR/SRR15131330_spades_reordered"
+    "$OUTPUT_DIR/SRR15131330_abyss_reordered"
+    "$OUTPUT_DIR/SRR18214264_abyss_reordered"
+    "$OUTPUT_DIR/SRR18214264_spades_reordered"
+)
+
+# Set the path for the BLAST analysis directory
+BLAST_DIR="$OUTPUT_DIR/blast_analysis"
+
+# Create the BLAST analysis directory if it doesn't exist
+mkdir -p "$BLAST_DIR"
+
+# Create BLAST database from the reference nucleotide sequence file
+makeblastdb -in "$CP015498_NUCLEOTIDE" -dbtype nucl -out "$BLAST_DIR/nucleotide"
+
+# Create BLAST database from the reference protein sequence file
+makeblastdb -in "$CP015498_PROTEIN" -dbtype prot -out "$BLAST_DIR/protein"
+
+# Perform gene prediction for each assembly directory
+for ASSEMBLY_DIR in "${ASSEMBLY_DIRECTORIES[@]}"; do
+    # Extract the assembly directory name without the path and remove the word "reordered"
+    ASSEMBLY_NAME=$(basename "$ASSEMBLY_DIR" | sed 's/_reordered$//')
+
+    # Get the assembly file path
+    ASSEMBLY_FILE="$ASSEMBLY_DIR/ragtag.scaffold.fasta"
+
+    # Run blastn
+    blastn -query "$ASSEMBLY_FILE" -db "$BLAST_DIR/nucleotide" -evalue 1e-6 -num_threads 4 -out "$BLAST_DIR/${ASSEMBLY_NAME}_blastn_results.txt"
+
+    # Run blastx
+    blastx -query "$ASSEMBLY_FILE" -db "$BLAST_DIR/protein" -evalue 1e-6 -num_threads 4 -out "$BLAST_DIR/${ASSEMBLY_NAME}_blastx_results.txt"
+    
+done
+
+# ------------------------------------------
+# Now I have all three required types of gene predictions - made with GeneMarkS-2, RAST and local BLAST. I will be comparing them.
+
+# For GeneMarkS-2, I calculated genes and overlaps manually using LibreOffice Calc. I got overlapping sequences by 
+# comparing where the prior sequence ends and the next one begins, if the sequence begins in a position where the sequence before
+# hasn't ended, I considered them overlapping.
+
+# For RAST I used the same method. Note that there are no gene predictions for assemblies SRR15131330 and SRR18214264 made with ABySS.
+
+# 1) ERR204044 assembly made with SPAdes - 1945 hits, 219 overlap; (GENEMARKS), 2683, 316 overlap (RAST)
+
+# 2) ERR204044 assembly made with ABySS - 1945 hits, 218 overlap (GENEMARKS); 3454, 622 overlap (RAST)
+
+# 3) SRR15131330 assembly made with SPAdes - 2024, 210 overlaps (GENEMARKS); 2854, 336 overlap (RAST)
+
+# 4) SRR15131330 assembly made with ABySS - 3666 sequences - all marked as atypical, 36 overlaps (GENEMARKS). I believe this data is not trustworthy.
+
+# 5) SRR18214264 assembly made with SPAdes - 1944, 218 overlaps (GENEMARKS); 2622 genes, 268 overlap (RAST)
+
+# 6) SRR18214264 assembly made with ABySS -  3365, 107 overlaps all ATPYICAL (GENEMARKS). I believe this data is not trustworthy.
