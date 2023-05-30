@@ -130,7 +130,9 @@ done
 
 # 6) SRR18214264 assembly made with ABySS -  3365 hits, 107 overlaps all ATPYICAL (GENEMARKS). I believe this data is not trustworthy.
 
-# For the next steps I decided to only continue analysing the SPAdes assembly.
+# For the next steps I decided to only continue analysing the SPAdes assembly. I am not certain why the ABySS assemblies failed, maybe I chose the 
+# wrong parameters or compromised my files in a different step. Another non-logical part to me is that the ABySS assembly for ERR204044 is actually
+# quite good, but the other two are very bad quality.
 
 # ----------------------------------------
 
