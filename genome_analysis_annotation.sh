@@ -1,4 +1,3 @@
-
 #!/bin/bash
 
 REFERENCE_DIR=~/HW2/references
