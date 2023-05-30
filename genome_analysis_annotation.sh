@@ -164,8 +164,6 @@ done
 # This time to create the tree I chose options Neighbour Joining and PID. PID (Percent Identity) is a useful metric for comparing proteins because it 
 # quantifies the degree of sequence similarity, indicating the level of conservation and potential functional similarity between protein sequences.
 
-# Since the files are too big for Moodle, I will upload the HTML format of my Jalview sequences into Github.
-
 # -----------------------------------------
 
 # My phylogenetic trees look similar and share clusters. This is expected because I am using the same genomes for comparison.
