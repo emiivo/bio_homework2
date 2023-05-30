@@ -119,14 +119,65 @@ done
 
 # For RAST I used the same method. Note that there are no gene predictions for assemblies SRR15131330 and SRR18214264 made with ABySS.
 
-# 1) ERR204044 assembly made with SPAdes - 1945 hits, 219 overlap; (GENEMARKS), 2683, 316 overlap (RAST)
+# 1) ERR204044 assembly made with SPAdes - 1945 hits, 219 overlap; (GENEMARKS), 2683 hits, 316 overlap (RAST)
 
-# 2) ERR204044 assembly made with ABySS - 1945 hits, 218 overlap (GENEMARKS); 3454, 622 overlap (RAST)
+# 2) ERR204044 assembly made with ABySS - 1945 hits, 218 overlap (GENEMARKS); 3454 hits, 622 overlap (RAST)
 
-# 3) SRR15131330 assembly made with SPAdes - 2024, 210 overlaps (GENEMARKS); 2854, 336 overlap (RAST)
+# 3) SRR15131330 assembly made with SPAdes - 2024 hits, 210 overlaps (GENEMARKS); 2854 hits, 336 overlap (RAST)
 
-# 4) SRR15131330 assembly made with ABySS - 3666 sequences - all marked as atypical, 36 overlaps (GENEMARKS). I believe this data is not trustworthy.
+# 4) SRR15131330 assembly made with ABySS - 3666 hits - all marked as atypical, 36 overlaps (GENEMARKS). I believe this data is not trustworthy.
 
-# 5) SRR18214264 assembly made with SPAdes - 1944, 218 overlaps (GENEMARKS); 2622 genes, 268 overlap (RAST)
+# 5) SRR18214264 assembly made with SPAdes - 1944 hits, 218 overlaps (GENEMARKS); 2622 hits, 268 overlap (RAST)
 
-# 6) SRR18214264 assembly made with ABySS -  3365, 107 overlaps all ATPYICAL (GENEMARKS). I believe this data is not trustworthy.
+# 6) SRR18214264 assembly made with ABySS -  3365 hits, 107 overlaps all ATPYICAL (GENEMARKS). I believe this data is not trustworthy.
+
+# For the next steps I decided to only continue analysing the SPAdes assembly.
+
+# ----------------------------------------
+
+# Next step - create a ring diagram using RAST predictions. I did this on the RAST page, in seed viewer, by choosing sequence based comparisson 
+# and comparing all three predictions to reference Lactobacillus helveticus DPC 4571 (already in RAST database).
+# The results show a high similarity to the reference for all predicions (mostly from 95% to 100%). The most similar sequences to each other are 
+# ERR204044 and SRR18214264, and the most similar sequence to the reference is SRR15131330.
+
+# ----------------------------------------
+
+# Next I created a phylogenetic tree using 16S sequences including the reference genome CP015498 and an outgroup (AP017922 - Staphylococcus aureus).
+# I got all the 16S genes by downloading gff3 format and FASTA of the reference and outgroup, downloading the coordinates of these genes in my assemblies 
+# by filtering the annotations created by RAST in the RAST Seed Viewer. Next using LibreOffice Calc I filtered out the 16S genes from reference and outgroup
+# and used bedtools (in my own computer - I decided it would be simpler because I have all the files already on it) to extract the sequences of the specific coordinates
+# from FASTA files (for my ssemblies - scaffolded). As an example, I used a similar command for all my files:
+
+# bedtools getfasta -fi CP015498.fasta -bed CP015498_16S.bed -fo reference_16S_sequences.fasta
+
+# Then I used Jalview to upload all the sequences, I alligned the sequences with the Muscle default settings because Muscle is an aligning tool that is
+# highly accurate. After aligning, I created the tree using the options for DNA and Neighbour Joining. I chose the Neighbor Joining method instead of 
+# Average Distance because Neighbor joining is efficiencient and handles large datasets well.
+
+# -----------------------------------------
+
+# Next I selected five proteins and created a multi-gene tree. Again, I used the same reference and outgroup and used my BUSCO predictions for this step.
+# My proteins - DNA polymerase III PolC-type, DNA-directed RNA polymerase subunit beta, DNA-directed RNA polymerase subunit beta',
+# helicase-exonuclease AddAB subunit AddA, valine--tRNA ligase. 
+
+# Again, I used the same method to format them so I can use them in Jalview. 
+# This time to create the tree I chose options Neighbour Joining and PID. PID (Percent Identity) is a useful metric for comparing proteins because it 
+# quantifies the degree of sequence similarity, indicating the level of conservation and potential functional similarity between protein sequences.
+
+# Since the files are too big for Moodle, I will upload the HTML format of my Jalview sequences into Github.
+
+# -----------------------------------------
+
+# My phylogenetic trees look similar and share clusters. This is expected because I am using the same genomes for comparison.
+# The presence of shared clusters in the phylogenetic trees supports the expected evolutionary relationships among the genomes,
+# indicating common ancestry and similar evolutionary trajectories.
+# The clusters that stood out in the tree, as expected, were of the outgroup as it is a different organism than the rest.
+
+# -----------------------------------------
+
+# Looking at my Gepard comparisons, ring diagram and phylogenetic trees, I believe that the assemblies of ERR204044 and SRR18214264 are the most similar to
+# each other. In the Gepard dotplot, even though the plot is not completely even, it shows the most even negative coorelation, which means these sequences
+# align well with each other and share the most similarities. This is also seen in the ring diagram, because when comparing them to the reference, they 
+# share very similar results. The same trend exists in the phylogenetic trees, as these two assemblies can be seen mostly clustered together.
+
+
