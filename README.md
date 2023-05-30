@@ -17,3 +17,5 @@ Tools used:
 11. GeneMarkS-2;
 12. RAST;
 13. BLAST.
+14. bedtools;
+15. Jalview.
