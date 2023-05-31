@@ -15,7 +15,7 @@ do
   fastqc "$INPUT_DIR/${file}_1.fastq.gz" "$INPUT_DIR/${file}_2.fastq.gz" -o ~/HW2/outputs/
 done
 
-# The quality of the sequences is ok, but not great, there are some adapters, there is some sequence duplocation.
+# The quality of the sequences is ok, but not great, there are some adapters, there is some sequence duplication.
 
 for file in "${FILES[@]}"
 do
@@ -41,7 +41,7 @@ do
 done
 
 # The quality of the files has improved, around 1% of basepairs have been filtered out, overall data looks better. Sequence duplication levels are sill
-# not great, but everything else looks ok.
+# not great, but everything else looks ok. Proportion per base sequence content is not very good.
 
 multiqc ~/HW2/outputs/ -o ~/HW2/outputs/
 
