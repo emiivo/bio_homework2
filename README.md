@@ -1,6 +1,6 @@
 # bio_homework2
 
-This is the second homework for genome assembling, analysing and annotation with shell scripts of three data sets: ERR204044, SRR15131330 and SRR18214264.
+This is the second homework for genome assembling, analysing and annotation of three data sets: ERR204044, SRR15131330 and SRR18214264.
 Reference genome: CP015498.
 
 Tools used: 
